@@ -1,5 +1,8 @@
 import java.awt.*;
 import java.awt.event.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.io.FileWriter;
@@ -9,17 +12,21 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.List;
 
+
+
 class Visitor {
     private String name;
     private String phoneNumber;
     private String carPlateNumber;
+    private String destination; 
     private Date timeIn;
     private Date timeOut;
 
-    public Visitor(String name, String phoneNumber, String carPlateNumber) {
+    public Visitor(String name, String phoneNumber, String carPlateNumber, String destination) {
         this.name = name;
         this.phoneNumber = phoneNumber;
         this.carPlateNumber = carPlateNumber;
+        this.destination = destination;
         this.timeIn = new Date();
     }
 
@@ -38,6 +45,10 @@ class Visitor {
     public String getCarPlateNumber() {
         return carPlateNumber;
     }
+    
+    public String getDestination() {
+        return destination;
+    }
 
     public Date getTimeIn() {
         return timeIn;
@@ -55,10 +66,10 @@ class GuardFunction {
         this.visitors = new ArrayList<>();
     }
 
-    public void registerVisitor(String name, String phoneNumber, String carPlateNumber) {
-        Visitor visitor = new Visitor(name, phoneNumber, carPlateNumber);
+    public void registerVisitor(String name, String phoneNumber, String carPlateNumber,  String destination) {
+        Visitor visitor = new Visitor(name, phoneNumber, carPlateNumber, destination);
         visitors.add(visitor);
-        System.out.println("Visitor " + name + " registered at " + visitor.getTimeIn() + " with car plate number: " + carPlateNumber);
+        System.out.println("Visitor " + name + " registered at " + visitor.getTimeIn() + " with car plate number: " + carPlateNumber + ", Destination: " + destination);
     }
 
     public void signOutVisitor(String name) {
@@ -85,21 +96,27 @@ public class GuardFunctionGUI extends JFrame {
     private JTextField nameField;
     private JTextField phoneField;
     private JTextField plateNumberField;
+    private JTextField destinationField;
     private JTable visitorTable;
     private DefaultTableModel tableModel;
     private GuardFunction guard;
     private SimpleDateFormat dateFormat;
     private String filePath = "visitor_records.txt";
+   
 
     public GuardFunctionGUI() {
         guard = new GuardFunction();
         dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         initializeUI();
+        
     }
-
+    
+    
+    
+    
     private void initializeUI() {
         setTitle("Guard System");
-        setSize(800, 400);
+        setSize(800, 500);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setLocationRelativeTo(null);
         setResizable(false);
@@ -150,19 +167,40 @@ public class GuardFunctionGUI extends JFrame {
 
         gbc.gridx = 1;
         gbc.gridy = 3;
+        
+     
+        gbc.gridx = 0;
+        gbc.gridy = 3;
+
+        JLabel destinationLabel = new JLabel("Destination:");
+        mainPanel.add(destinationLabel, gbc);
+
+        gbc.gridx = 1;
+        gbc.gridy = 3;
+
+        destinationField = new JTextField(15);
+        mainPanel.add(destinationField, gbc);
+
+
         gbc.anchor = GridBagConstraints.CENTER;
         gbc.fill = GridBagConstraints.NONE;
-
+        
+        gbc.gridx = 1;
+        gbc.gridy = 4;
+        
         JButton registerButton = new JButton("Register");
         registerButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 String name = nameField.getText();
                 String phoneNumber = phoneField.getText();
                 String plateNumber = plateNumberField.getText();
-                guard.registerVisitor(name, phoneNumber, plateNumber);
-                Object[] rowData = {name, phoneNumber, plateNumber, dateFormat.format(new Date()), ""};
+                String destination = destinationField.getText();
+                
+                guard.registerVisitor(name, phoneNumber, plateNumber, destination);
+                Object[] rowData = {name, phoneNumber, plateNumber, destination, dateFormat.format(new Date()), ""};
                 tableModel.addRow(rowData);
-                saveVisitorDetailsToFile(name, phoneNumber, plateNumber);
+                
+                saveVisitorDetailsToFile(name, phoneNumber, plateNumber, destination); 
                 clearFields();
                 
                 JOptionPane.showMessageDialog(GuardFunctionGUI.this, "Visitor information successfully registered."
@@ -172,7 +210,7 @@ public class GuardFunctionGUI extends JFrame {
         mainPanel.add(registerButton, gbc);
 
         gbc.gridx = 1;
-        gbc.gridy = 4;
+        gbc.gridy = 5;
 
         JButton signOutButton = new JButton("Time Out");
         signOutButton.addActionListener(new ActionListener() {
@@ -181,7 +219,8 @@ public class GuardFunctionGUI extends JFrame {
                 if (selectedRow != -1) {
                     String name = (String) tableModel.getValueAt(selectedRow, 0);
                     guard.signOutVisitor(name);
-                    tableModel.setValueAt(dateFormat.format(new Date()), selectedRow, 4);
+                    updateVisitorTimeOut(name);
+                    tableModel.setValueAt(dateFormat.format(new Date()), selectedRow, 5);
                     clearFields();
                 }
             }
@@ -189,7 +228,7 @@ public class GuardFunctionGUI extends JFrame {
         mainPanel.add(signOutButton, gbc);
 
         gbc.gridx = 1;
-        gbc.gridy = 5;
+        gbc.gridy = 6;
 
         JButton deleteButton = new JButton("Delete");
         deleteButton.addActionListener(new ActionListener() {
@@ -206,7 +245,7 @@ public class GuardFunctionGUI extends JFrame {
         mainPanel.add(deleteButton, gbc);
 
         gbc.gridx = 0;
-        gbc.gridy = 6;
+        gbc.gridy = 7;
         gbc.gridwidth = 2;
         gbc.anchor = GridBagConstraints.WEST;
         gbc.fill = GridBagConstraints.BOTH;
@@ -217,6 +256,7 @@ public class GuardFunctionGUI extends JFrame {
         tableModel.addColumn("Name");
         tableModel.addColumn("Phone Number");
         tableModel.addColumn("Car Plate Number");
+        tableModel.addColumn("Destination");
         tableModel.addColumn("Time In");
         tableModel.addColumn("Time Out");
 
@@ -228,18 +268,22 @@ public class GuardFunctionGUI extends JFrame {
 
         add(mainPanel);
     }
-
+    
+      
     private void clearFields() {
         nameField.setText("");
         phoneField.setText("");
         plateNumberField.setText("");
+        destinationField.setText("");
     }
-
-    private void saveVisitorDetailsToFile(String name, String phoneNumber, String carPlateNumber) {
+    
+   
+    private void saveVisitorDetailsToFile(String name, String phoneNumber, String carPlateNumber, String destination) {
         try (PrintWriter writer = new PrintWriter(new FileWriter(filePath, true))) {
             writer.println("Name: " + name);
             writer.println("Phone Number: " + phoneNumber);
             writer.println("Car Plate Number: " + carPlateNumber);
+            writer.println("Visitor Destination: " + destination);
             writer.println("Time In: " + dateFormat.format(new Date()));
             writer.println();
             System.out.println("Visitor details saved to file: " + filePath);
@@ -247,10 +291,48 @@ public class GuardFunctionGUI extends JFrame {
             System.out.println("Error occurred while saving visitor details to file: " + e.getMessage());
         }
     }
+    
+        private void updateVisitorTimeOut(String name) {
+    try {
+        File file = new File(filePath);
+        File tempFile = new File("temp.txt");
+
+        BufferedReader reader = new BufferedReader(new FileReader(file));
+        PrintWriter writer = new PrintWriter(new FileWriter(tempFile));
+
+        String currentLine;
+        while ((currentLine = reader.readLine()) != null) {
+            if (currentLine.startsWith("Name: " + name)) {
+                writer.println(currentLine);
+                writer.println("Time Out: " + dateFormat.format(new Date()));
+                writer.println(); 
+            } else {
+                writer.println(currentLine);
+            }
+        }
+
+        writer.close();
+        reader.close();
+
+        // Delete the original file
+        if (file.delete()) {
+            // Rename the temporary file to the original file name
+            if (tempFile.renameTo(file)) {
+                System.out.println("Visitor time out updated in file: " + filePath);
+            } else {
+                System.out.println("Error occurred while renaming the file.");
+            }
+        } else {
+            System.out.println("Error occurred while deleting the file.");
+        }
+    } catch (IOException e) {
+        System.out.println("Error occurred while updating visitor time out in file: " + e.getMessage());
+    }
+}
 
     public static void main(String[] args) {
         try {
-            // Set the look and feel to the system's default
+           
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         } catch (Exception e) {
             e.printStackTrace();
@@ -258,9 +340,14 @@ public class GuardFunctionGUI extends JFrame {
 
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                GuardFunctionGUI guardFunctionGUI = new GuardFunctionGUI();
-                guardFunctionGUI.setVisible(true);
+
+                    GuardFunctionGUI guardFunctionGUI = new GuardFunctionGUI();
+                    
+                    guardFunctionGUI.setVisible(true);
+                
             }
         });
     }
+
+   
 }
