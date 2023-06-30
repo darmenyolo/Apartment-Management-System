@@ -2,21 +2,22 @@ import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
 
-public class GuardHomescreenGUI extends JFrame {
-    private GuardFunctionGUI guardFunctionGUI;
+public class ManagerHomescreenGUI extends JFrame {
     
+    private CreateResidentAccountGUI residentaccGUI;
+    private SearchResidentGUI searchResidentGUI;
 
-    public GuardHomescreenGUI() {
+    public ManagerHomescreenGUI() {
         initializeUI();
     }
 
     private void initializeUI() {
-        setTitle("Guard Management System");
+        setTitle("Apartment Management System");
         setSize(700, 500);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
         setResizable(false);
-        setBackground(Color.LIGHT_GRAY);
+       setBackground(Color.LIGHT_GRAY);
         
         
          // Background image
@@ -29,29 +30,37 @@ public class GuardHomescreenGUI extends JFrame {
         JPanel contentPane = (JPanel) getContentPane();
         contentPane.setOpaque(false);
 
-        
-
-       
-
         JMenuBar menuBar = new JMenuBar();
-        
-        JMenu guardfunctionMenu = new JMenu("Guard Function");
-        JMenuItem openItem = new JMenuItem("Open Guard Function");
-        openItem.addActionListener(new ActionListener() {
+        JMenu apartmentManagerMenu = new JMenu("Apartment Manager Function");
+        JMenuItem createResidentMenuItem = new JMenuItem("Create Resident Account");
+        createResidentMenuItem.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                if (guardFunctionGUI == null) {
-                    guardFunctionGUI = new GuardFunctionGUI();
+                if (residentaccGUI == null) {
+                    residentaccGUI = new CreateResidentAccountGUI();
                 }
-                guardFunctionGUI.setVisible(true);
+                residentaccGUI.setVisible(true);
+            
             }
-        });
+});
+        // NEED UPDATE SEARCHRESIDENTGUI
+        
+        JMenuItem searchResident = new JMenuItem("Search Resident Info");
+        searchResident.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                if (searchResidentGUI == null) {
+                    searchResidentGUI = new SearchResidentGUI();
+                }
+                searchResidentGUI.setVisible(true);
+            
+            }
+});
         
         
+        apartmentManagerMenu.add(createResidentMenuItem);
+        apartmentManagerMenu.add(searchResident);
         
-        guardfunctionMenu.add(openItem);
-      
-        
-        menuBar.add(guardfunctionMenu);
+       
+        menuBar.add(apartmentManagerMenu);
         setJMenuBar(menuBar);
     }
 
@@ -65,8 +74,8 @@ public class GuardHomescreenGUI extends JFrame {
 
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                GuardHomescreenGUI homescreenGUI = new GuardHomescreenGUI();
-                homescreenGUI.setVisible(true);
+                ManagerHomescreenGUI managerscreenGUI = new ManagerHomescreenGUI();
+                managerscreenGUI.setVisible(true);
             }
         });
     }
