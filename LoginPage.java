@@ -141,7 +141,7 @@ public class LoginPage extends JFrame implements ActionListener {
 
                 if (rs.next()) {
                     System.out.println("Resident Login successful");
-                    residentscreenGUI  = new ResidentHomescreenGUI();
+                    residentscreenGUI  = new ResidentHomescreenGUI(username);
                     residentscreenGUI.setVisible(true);
                     dispose();
                 } else {
