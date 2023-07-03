@@ -10,6 +10,8 @@ public class ResidentHomescreenGUI extends JFrame {
    
     private ResidentAccountInfoGUI residentinfoGUI;
     private ResidentManagementForumGUI managementforumGUI;
+    private ResidentDiscussionForumGUI residentforumGUI;
+    private BillFunctionGUI billfunctionGUI;
     private String residentUsername; 
     
 
@@ -63,6 +65,11 @@ public class ResidentHomescreenGUI extends JFrame {
             public void actionPerformed(ActionEvent e) {
                 
                 //ADD ACTION FOR RESIDENT FORUM
+                
+                if (residentforumGUI == null) {
+             residentforumGUI = new ResidentDiscussionForumGUI();
+                }
+             residentforumGUI.setVisible(true);
             }
         });
         
@@ -81,8 +88,12 @@ public class ResidentHomescreenGUI extends JFrame {
         openBillPayment.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                
-                
                 //ADD ACTION FOR BILL PAYMENT FUNCTION
+                
+                if (billfunctionGUI == null) {
+             billfunctionGUI = new BillFunctionGUI();
+                }
+             billfunctionGUI.setVisible(true);
             }
         });
         
